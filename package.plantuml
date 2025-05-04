@@ -1,0 +1,74 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class Category {
+  + Category(): 
+  - entertainment: double
+  - id: Long
+  - domestic: double
+  - groceries: double
+  - shopping: double
+  - educational: double
+  - fueling: double
+  - others: double
+  - user: User
+  - dateTime: LocalDateTime
+  - travelling: double
+  - medical: double
+  - bills: double
+}
+class ExpenseHistory {
+  + ExpenseHistory(): 
+  - user: User
+  - expenseAmount: Double
+  - id: Long
+  - recordedAt: LocalDateTime
+}
+class Money {
+  + Money(): 
+  - monthlyLimit: double
+  - user: User
+  - debitedAmount: double
+  - trackingStartDate: LocalDateTime
+  - savingAmount: double
+  - creditAmount: double
+  - income: double
+  - id: long
+}
+class Sms {
+  + Sms(): 
+  - moneyType: MoneyType
+  - dateTime: LocalDateTime
+  - refNo: String
+  - category: CategoryType
+  - id: long
+  - amount: double
+  - user: User
+}
+class User {
+  + User(): 
+  - createdAt: LocalDateTime
+  - id: Long
+  - bank: String
+  - email: String
+  - money: Money
+  - expenseHistory: List<ExpenseHistory>
+  - name: String
+  - sms: List<Sms>
+  - password: String
+  - mobile: String
+  - category: Category
+}
+
+Category       "1" *-[#595959,plain]-> "user\n1" User           
+ExpenseHistory "1" *-[#595959,plain]-> "user\n1" User           
+Money          "1" *-[#595959,plain]-> "user\n1" User           
+Sms            "1" *-[#595959,plain]-> "user\n1" User           
+User           "1" *-[#595959,plain]-> "category\n1" Category       
+User           "1" *-[#595959,plain]-> "expenseHistory\n*" ExpenseHistory 
+User           "1" *-[#595959,plain]-> "money\n1" Money          
+User           "1" *-[#595959,plain]-> "sms\n*" Sms            
+@enduml
