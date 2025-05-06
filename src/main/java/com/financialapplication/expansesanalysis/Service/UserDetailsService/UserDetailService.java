@@ -1,6 +1,6 @@
 package com.financialapplication.expansesanalysis.Service.UserDetailsService;
 
-import com.financialapplication.expansesanalysis.Exception.UserNotFoundException;
+import com.financialapplication.expansesanalysis.Exception.NotFoundException;
 import com.financialapplication.expansesanalysis.Model.Entity.User;
 import com.financialapplication.expansesanalysis.Repository.UserRepository;
 import lombok.SneakyThrows;
@@ -24,7 +24,7 @@ public class UserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String mobileNo){
             Optional<User> user = userRepository.findByMobile(mobileNo);
-            user.orElseThrow(UserNotFoundException::new);
+            user.orElseThrow(NotFoundException::new);
             return new UserDetail(user.get());
     }
 }

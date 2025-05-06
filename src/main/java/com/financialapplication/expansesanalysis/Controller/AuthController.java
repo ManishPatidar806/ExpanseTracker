@@ -2,7 +2,7 @@ package com.financialapplication.expansesanalysis.Controller;
 
 import com.financialapplication.expansesanalysis.Exception.CommonException;
 import com.financialapplication.expansesanalysis.Exception.UserAlreadyExistException;
-import com.financialapplication.expansesanalysis.Exception.UserNotFoundException;
+import com.financialapplication.expansesanalysis.Exception.NotFoundException;
 import com.financialapplication.expansesanalysis.Model.Entity.User;
 import com.financialapplication.expansesanalysis.Model.Request.LoginRequest;
 import com.financialapplication.expansesanalysis.Model.Request.RegisterRequest;
@@ -27,7 +27,7 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest  registerRequest) throws UserAlreadyExistException, UserNotFoundException {
+    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest  registerRequest) throws UserAlreadyExistException, NotFoundException {
         User user1 = authService.signUpUser(registerRequest);
         String token  = jwtSecurity.generateToken(user1.getMobile(), user1.getEmail());
         AuthResponse authResponse = new AuthResponse();
@@ -38,7 +38,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest loginDto) throws CommonException, UserNotFoundException {
+    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest loginDto) throws CommonException, NotFoundException {
         String mobile = loginDto.getMobileNo();
         String password = loginDto.getPassword();
         User user1 = authService.loginUser(mobile,password);

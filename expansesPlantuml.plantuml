@@ -1,0 +1,65 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class category {
+   bills: double
+   date_time: datetime(6)
+   domestic: double
+   educational: double
+   entertainment: double
+   fueling: double
+   groceries: double
+   medical: double
+   others: double
+   shopping: double
+   travelling: double
+   user_id: bigint
+   id: bigint
+}
+class expense_history {
+   expense_amount: double
+   recorded_at: datetime(6)
+   user_id: bigint
+   id: bigint
+}
+class money {
+   credit_amount: double
+   debited_amount: double
+   income: double
+   monthly_limit: double
+   saving_amount: double
+   tracking_start_date: datetime(6)
+   user_id: bigint
+   id: bigint
+}
+class sms {
+   amount: double
+   category: enum('bills', 'domestic', 'educational', 'entertainment', 'fueling', 'groceries', 'medical', 'others', 'shopping', 'travelling')
+   date_time: datetime(6)
+   money_type: enum('credited', 'debited')
+   ref_no: varchar(255)
+   user_id: bigint
+   id: bigint
+}
+class user {
+   bank: varchar(255)
+   created_at: datetime(6)
+   email: varchar(255)
+   mobile: varchar(255)
+   name: varchar(255)
+   password: varchar(255)
+   category_id: bigint
+   money_id: bigint
+   id: bigint
+}
+
+category         -[#595959,plain]-^  user            : "user_id:id"
+expense_history  -[#595959,plain]-^  user            : "user_id:id"
+money            -[#595959,plain]-^  user            : "user_id:id"
+sms              -[#595959,plain]-^  user            : "user_id:id"
+user             -[#595959,plain]-^  category        : "category_id:id"
+user             -[#595959,plain]-^  money           : "money_id:id"
+@enduml

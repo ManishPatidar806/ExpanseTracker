@@ -1,14 +1,14 @@
 package com.financialapplication.expansesanalysis.Service;
 
 
-import com.financialapplication.expansesanalysis.Exception.UserNotFoundException;
+import com.financialapplication.expansesanalysis.Exception.NotFoundException;
 import com.financialapplication.expansesanalysis.Model.Entity.Category;
 import com.financialapplication.expansesanalysis.Model.Entity.Money;
 import com.financialapplication.expansesanalysis.Model.Entity.Sms;
 import com.financialapplication.expansesanalysis.Model.Entity.User;
 import com.financialapplication.expansesanalysis.Model.Enum.CategoryType;
 import com.financialapplication.expansesanalysis.Model.Enum.MoneyType;
-import com.financialapplication.expansesanalysis.Model.Request.SmsRequest;
+import com.financialapplication.expansesanalysis.Model.Request.SmsSavedRequest;
 import com.financialapplication.expansesanalysis.Model.Request.SmsUpdateRequest;
 import com.financialapplication.expansesanalysis.Model.Response.CommonResponse;
 import com.financialapplication.expansesanalysis.Model.Response.SmsResponse;
@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -48,14 +50,19 @@ public class SmsServiceImpl implements SmsService {
         this.categoryRepository = categoryRepository;
     }
 
-    public ResponseEntity<CommonResponse> savedSms(SmsRequest smsRequest, String mobileNo) throws UserNotFoundException {
-        if(smsRequest.getSms().isEmpty()){
-            return new ResponseEntity<>(new CommonResponse("NO New Message Is Found ", true), HttpStatus.NO_CONTENT);
+    public ResponseEntity<CommonResponse> savedSms(SmsSavedRequest smsRequest, String mobileNo) throws NotFoundException {
+        if (smsRequest.getSms().isEmpty()) {
+            return new ResponseEntity<>(new CommonResponse("NO New Message Is Found", true), HttpStatus.NO_CONTENT);
         }
-        User user = userRepository.findByMobile(mobileNo).orElseThrow(UserNotFoundException::new);
+
+        User user = userRepository.findByMobile(mobileNo)
+                .orElseThrow(NotFoundException::new);
+
         LocalDateTime smsTime = smsRepository.findLatestDateTime();
         LocalDateTime oneMonthBeforeUserCreated = user.getCreatedAt().minusMonths(1);
+
         List<Sms> filteredSmsList = smsRequest.getSms().stream()
+                .map(smsDto -> mapper.map(smsDto, Sms.class))
                 .filter(sms -> sms.getDateTime().isAfter(smsTime) &&
                         sms.getDateTime().isAfter(oneMonthBeforeUserCreated))
                 .peek(sms -> sms.setUser(user))
@@ -65,29 +72,37 @@ public class SmsServiceImpl implements SmsService {
             return new ResponseEntity<>(new CommonResponse("NO New Message to Save", true), HttpStatus.NO_CONTENT);
         }
 
+        // Partition into credited and debited in a single pass
+        Map<Boolean, List<Sms>> partitioned = filteredSmsList.stream()
+                .collect(Collectors.partitioningBy(sms -> sms.getMoneyType() == MoneyType.CREDITED));
+
+        double credited = partitioned.get(true).stream().mapToDouble(Sms::getAmount).sum();
+        double debited = partitioned.get(false).stream().mapToDouble(Sms::getAmount).sum();
+
+        // Calculate expenses after user creation and after last saved sms
+        double expenses = filteredSmsList.stream()
+                .filter(sms -> sms.getDateTime().isAfter(user.getCreatedAt()) &&
+                        sms.getDateTime().isAfter(smsTime))
+                .mapToDouble(Sms::getAmount)
+                .sum();
+
+        // Retrieve or create Money object
         Money money = moneyRepository.findByUserId(user.getId()).orElseGet(() -> {
             Money m = new Money();
             m.setUser(user);
             return m;
         });
 
-        double credited = 0;
-        double debited = 0;
-        for (Sms sm : filteredSmsList) {
-            if (sm.getMoneyType().equals(MoneyType.CREDITED)) {
-                credited += sm.getAmount();
-            } else {
-                debited += sm.getAmount();
-            }
-        }
-
+        // Update money fields
         money.setCreditAmount(money.getCreditAmount() + credited);
         money.setDebitedAmount(money.getDebitedAmount() + debited);
+        money.setMonthlyLimit(money.getMonthlyLimit() - expenses);  // Consider revising this logic if needed
+
+        // Save entities
         smsRepository.saveAll(filteredSmsList);
         moneyRepository.save(money);
 
-        CommonResponse response = new CommonResponse("Sms Saved Successfully", true);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(new CommonResponse("Sms Saved Successfully", true), HttpStatus.OK);
     }
 
 
@@ -95,8 +110,8 @@ public class SmsServiceImpl implements SmsService {
      * Get all Sms of Category null
      * */
     @Override
-    public ResponseEntity<SmsResponse> getAllSms(String moblieNo) throws UserNotFoundException {
-        User user = userRepository.findByMobile(moblieNo).orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<SmsResponse> getAllSms(String moblieNo) throws NotFoundException {
+        User user = userRepository.findByMobile(moblieNo).orElseThrow(NotFoundException::new);
         List<Sms> smsList = smsRepository.getAllSmsOfCategoryNull(moblieNo, user.getCreatedAt());
         SmsResponse response = new SmsResponse();
         response.setMessage("Sms Found Successfully");
@@ -110,8 +125,8 @@ public class SmsServiceImpl implements SmsService {
      * */
 
     @Override
-    public ResponseEntity<SmsResponse> getSmsByCategory(String mobileNo, CategoryType category) throws UserNotFoundException {
-        User user = userRepository.findByMobile(mobileNo).orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<SmsResponse> getSmsByCategory(String mobileNo, CategoryType category) throws NotFoundException {
+        User user = userRepository.findByMobile(mobileNo).orElseThrow(NotFoundException::new);
         List<Sms> smsList = smsRepository.getAllSmsByCategory(mobileNo, category, user.getCreatedAt());
         SmsResponse response = new SmsResponse();
         response.setMessage("Sms found Successfully");
@@ -121,8 +136,8 @@ public class SmsServiceImpl implements SmsService {
     }
 
     @Override
-    public ResponseEntity<CommonResponse> updateCategory(String mobileNo, SmsUpdateRequest smsRequest) throws UserNotFoundException {
-        User user = userRepository.findByMobile(mobileNo).orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<CommonResponse> updateCategory(String mobileNo, SmsUpdateRequest smsRequest) throws NotFoundException {
+        User user = userRepository.findByMobile(mobileNo).orElseThrow(NotFoundException::new);
         List<Sms> filteredSms = smsRequest.getSms().stream()
                 .map(smsDto->mapper.map(smsDto,Sms.class))
                 .filter(sms -> sms.getCategory() != null)

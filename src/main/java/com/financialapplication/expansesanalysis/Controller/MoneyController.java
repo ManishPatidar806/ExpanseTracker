@@ -1,6 +1,7 @@
 package com.financialapplication.expansesanalysis.Controller;
 
 
+import com.financialapplication.expansesanalysis.Exception.NotFoundException;
 import com.financialapplication.expansesanalysis.Model.Response.CommonResponse;
 import com.financialapplication.expansesanalysis.Model.Response.MoneyResponse;
 import com.financialapplication.expansesanalysis.Service.MoneyService;
@@ -29,7 +30,7 @@ public class MoneyController {
 
     @PostMapping("/saveIncome")
     public ResponseEntity<CommonResponse> saveIncome(@AuthenticationPrincipal UserDetails userDetails , @RequestParam @NotBlank(message = "Saving Is Not Present In Valid Form") double saveing,
-                                                     @RequestParam @NotBlank(message = "Income is not in Valid Form") double income){
+                                                     @RequestParam @NotBlank(message = "Income is not in Valid Form") double income) throws NotFoundException {
         return moneyService.saveIncome(userDetails.getUsername(),saveing,income);
     }
 

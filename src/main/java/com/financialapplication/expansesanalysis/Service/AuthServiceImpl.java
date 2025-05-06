@@ -3,7 +3,7 @@ package com.financialapplication.expansesanalysis.Service;
 
 import com.financialapplication.expansesanalysis.Exception.CommonException;
 import com.financialapplication.expansesanalysis.Exception.UserAlreadyExistException;
-import com.financialapplication.expansesanalysis.Exception.UserNotFoundException;
+import com.financialapplication.expansesanalysis.Exception.NotFoundException;
 import com.financialapplication.expansesanalysis.Model.Entity.Money;
 import com.financialapplication.expansesanalysis.Model.Entity.User;
 import com.financialapplication.expansesanalysis.Model.Request.RegisterRequest;
@@ -39,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
-    public User loginUser(String mobileNo, String password) throws CommonException, UserNotFoundException {
+    public User loginUser(String mobileNo, String password) throws CommonException, NotFoundException {
         Optional<User> user1 = userRepository.findByMobile(mobileNo);
         if (user1.isPresent()) {
             if (user1.get().getPassword().equals(password)) {
@@ -48,14 +48,14 @@ public class AuthServiceImpl implements AuthService {
                 throw new CommonException("Invalid Password", 405);
             }
         } else {
-            throw new UserNotFoundException();
+            throw new NotFoundException();
         }
     }
 
 
-    public User extraceUser(String mobileNo) throws UserNotFoundException {
+    public User extraceUser(String mobileNo) throws NotFoundException {
         Optional<User> user = userRepository.findByMobile(mobileNo);
-        user.orElseThrow(UserNotFoundException::new);
+        user.orElseThrow(NotFoundException::new);
         return user.get();
 
     }

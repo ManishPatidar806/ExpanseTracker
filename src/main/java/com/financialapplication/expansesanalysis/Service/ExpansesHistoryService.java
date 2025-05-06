@@ -1,6 +1,6 @@
 package com.financialapplication.expansesanalysis.Service;
 
-import com.financialapplication.expansesanalysis.Exception.UserNotFoundException;
+import com.financialapplication.expansesanalysis.Exception.NotFoundException;
 import com.financialapplication.expansesanalysis.Model.Dto.ExpenseSummary;
 import com.financialapplication.expansesanalysis.Model.Entity.ExpenseHistory;
 import com.financialapplication.expansesanalysis.Model.Entity.User;
@@ -37,7 +37,7 @@ public class ExpansesHistoryService {
             ExpenseHistory eh = new ExpenseHistory();
             eh.setExpenseAmount(expenseSummary.getTotalExpense());
             eh.setRecordedAt(LocalDateTime.now());
-            User user = userRepository.findById(expenseSummary.getUserId()).orElseThrow(UserNotFoundException::new);
+            User user = userRepository.findById(expenseSummary.getUserId()).orElseThrow(NotFoundException::new);
             eh.setUser(user);
             entities.add(eh);
         }

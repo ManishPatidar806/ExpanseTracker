@@ -1,13 +1,14 @@
 package com.financialapplication.expansesanalysis.Model.Request;
 
-import com.financialapplication.expansesanalysis.Model.Entity.Sms;
+import com.financialapplication.expansesanalysis.Model.Dto.SmsSaved;
+
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class SmsRequest {
+public class SmsSavedRequest {
 
-private List<Sms> sms;
+private List<SmsSaved> sms;
 
 }

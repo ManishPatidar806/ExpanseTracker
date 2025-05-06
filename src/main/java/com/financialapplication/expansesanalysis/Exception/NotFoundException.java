@@ -1,7 +1,11 @@
 package com.financialapplication.expansesanalysis.Exception;
 
-public class UserNotFoundException extends Exception{
-    public UserNotFoundException(){
+public class NotFoundException extends Exception {
+    public NotFoundException() {
         super();
+    }
+
+    public NotFoundException(String message) {
+        super(message);
     }
 }

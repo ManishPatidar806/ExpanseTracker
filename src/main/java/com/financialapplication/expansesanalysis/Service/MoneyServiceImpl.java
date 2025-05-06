@@ -1,10 +1,10 @@
 package com.financialapplication.expansesanalysis.Service;
 
+import com.financialapplication.expansesanalysis.Exception.NotFoundException;
 import com.financialapplication.expansesanalysis.Model.Entity.Money;
 import com.financialapplication.expansesanalysis.Model.Response.CommonResponse;
 import com.financialapplication.expansesanalysis.Model.Response.MoneyResponse;
 import com.financialapplication.expansesanalysis.Repository.MoneyRepository;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,14 +29,17 @@ public class MoneyServiceImpl implements MoneyService {
     }
 
     @Override
-    public ResponseEntity<CommonResponse> saveIncome(String mobileNo, double saving, double income) {
-        Optional<Money> money = moneyRepository.findAmountByMoblieNo(mobileNo);
-        if(money.isPresent()){
-        money.get().setIncome(income);
-        money.get().setSavingAmount(saving);
-        money.get().setMonthlyLimit(income - saving);
-        moneyRepository.save(money.get());}
-        return new ResponseEntity<>(new CommonResponse("Limit Set Successfully", true), HttpStatus.OK);
+    public ResponseEntity<CommonResponse> saveIncome(String mobileNo, double saving, double income) throws NotFoundException {
+        if (income <= saving) {
+            return new ResponseEntity<>(new CommonResponse("Income is Greater than Saving!", false), HttpStatus.BAD_REQUEST);
+        }
+        Money money = moneyRepository.findAmountByMoblieNo(mobileNo).orElseThrow(() -> new NotFoundException("Money Not Found"));
+        money.setIncome(income);
+        money.setSavingAmount(saving);
+        money.setMonthlyLimit(income - saving);
+        moneyRepository.save(money);
+        double limit = income - saving;
+        return new ResponseEntity<>(new CommonResponse("Limit Set Successfully : Rs." + limit, true), HttpStatus.OK);
     }
 
 

@@ -6,7 +6,6 @@ import com.financialapplication.expansesanalysis.Model.Enum.MoneyType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
 

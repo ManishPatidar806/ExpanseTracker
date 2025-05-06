@@ -21,10 +21,14 @@ public class GlobalExceptionHandler {
 
     Logger logger = Logger.getLogger(getClass().getName());
 
-    @ExceptionHandler(value = UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception) {
+    @ExceptionHandler(value = NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException exception) {
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setMessage("User Does Not Exist.");
+        if(exception.getMessage().isEmpty()){
+            errorResponse.setMessage("Resource Not Found");
+        }else{
+        errorResponse.setMessage(exception.getMessage());
+        }
         errorResponse.setStatus(false);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }

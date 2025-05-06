@@ -1,8 +1,8 @@
 package com.financialapplication.expansesanalysis.Controller;
 
-import com.financialapplication.expansesanalysis.Exception.UserNotFoundException;
+import com.financialapplication.expansesanalysis.Exception.NotFoundException;
 import com.financialapplication.expansesanalysis.Model.Enum.CategoryType;
-import com.financialapplication.expansesanalysis.Model.Request.SmsRequest;
+import com.financialapplication.expansesanalysis.Model.Request.SmsSavedRequest;
 import com.financialapplication.expansesanalysis.Model.Request.SmsUpdateRequest;
 import com.financialapplication.expansesanalysis.Model.Response.CommonResponse;
 import com.financialapplication.expansesanalysis.Model.Response.SmsResponse;
@@ -32,10 +32,10 @@ public class SmsController {
      * */
     @PostMapping("/saved")
     public ResponseEntity<CommonResponse> savedSms(
-            @RequestBody @Valid SmsRequest smsRequest
+            @RequestBody @Valid SmsSavedRequest smsRequest
             , @AuthenticationPrincipal UserDetails userDetails
 
-    ) throws UserNotFoundException {
+    ) throws NotFoundException {
         return smsService.savedSms(smsRequest, userDetails.getUsername());
     }
 
@@ -43,7 +43,7 @@ public class SmsController {
      * Get All Sms Which category is Null
      * */
     @GetMapping("/getforcategory")
-    public ResponseEntity<SmsResponse> getForCategory(@AuthenticationPrincipal UserDetails userDetails) throws UserNotFoundException {
+    public ResponseEntity<SmsResponse> getForCategory(@AuthenticationPrincipal UserDetails userDetails) throws NotFoundException {
         return smsService.getAllSms(userDetails.getUsername());
     }
 
@@ -52,7 +52,7 @@ public class SmsController {
      * */
     @GetMapping("/getbycategory")
     public ResponseEntity<SmsResponse> getByCategory(@AuthenticationPrincipal UserDetails userDetails
-            , @RequestParam @NotBlank CategoryType category) throws UserNotFoundException {
+            , @RequestParam @NotBlank CategoryType category) throws NotFoundException {
         return smsService.getSmsByCategory(userDetails.getUsername(), category);
     }
 
@@ -61,7 +61,7 @@ public class SmsController {
      * */
     @PostMapping("/updateCategory")
     public ResponseEntity<CommonResponse> updateCategory(@AuthenticationPrincipal UserDetails userDetails,
-                                                         @RequestBody SmsUpdateRequest smsRequest) throws UserNotFoundException {
+                                                         @RequestBody SmsUpdateRequest smsRequest) throws NotFoundException {
         return smsService.updateCategory(userDetails.getUsername(), smsRequest);
     }
 
